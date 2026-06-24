@@ -1,6 +1,10 @@
+import logging
+
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
+
+logger = logging.getLogger(__name__)
 
 REWARD_MAP = {
     "local_win": 0.1,
@@ -49,7 +53,11 @@ class UltimateTicTacToeEnv(gym.Env):
         op_action = self.opponent.act(state)
 
         # Fallback: Random move
-        if not self.action_space.contains(op_action) or not self._validate_action(op_action):
+        if not self.action_space.contains(op_action) or not self._validate_action(op_action, state):
+            logger.warning(
+                f"Opponent provided invalid action {op_action}; Falling back to random move."
+            )
+
             active_boards = np.where(state["active"])[0]
             board = int(self.np_random.choice(active_boards))
             empty_cells = np.where(state["board"][board] == 0)[0]
@@ -89,7 +97,7 @@ class UltimateTicTacToeEnv(gym.Env):
         reward = 0.0
 
         # Note: we terminate on illegal move
-        if not self._validate_action(action):
+        if not self._validate_action(action, self.state):
             reward += REWARD_MAP["illegal"]
             return self.obs, reward, True, False, {"result": "illegal"}
 
@@ -126,10 +134,11 @@ class UltimateTicTacToeEnv(gym.Env):
 
         return self.obs, reward, False, False, {"result": None}
 
-    def _validate_action(self, action):
-        if not self.state["active"][action // 9]:
+    @staticmethod
+    def _validate_action(action, state):
+        if not state["active"][action // 9]:
             return False
-        if self.state["board"][action // 9, action % 9] != 0:
+        if state["board"][action // 9, action % 9] != 0:
             return False
         return True
 
@@ -203,18 +212,21 @@ class UltimateTicTacToeEnv(gym.Env):
                 for i in range(9)
             ]
 
+            final = []
             for i in range(9):
                 substrings = []
                 for j in range(3):
                     s = board_strings[i // 3 * 3 + j][i % 3]
                     substrings.append(s)
                 line = " | ".join(substrings)
-                print(line)
+                final.append(line)
                 if i % 3 == 2 and i != 8:
-                    print(DIVIDER)
+                    final.append(DIVIDER)
 
             active_board_list = np.where(self.state["active"])[0].tolist()
-            print(f"active boards: {active_board_list}")
+            final.append(f"active boards: {active_board_list}")
+
+            return "\n".join(final)
 
 
 if __name__ == "__main__":
@@ -238,12 +250,12 @@ if __name__ == "__main__":
             break
         elif cmd == "s":
             _ = game.reset()
-            game.render()
+            print(game.render())
             started = True
         elif started and re.match(r"^\d \d$", cmd):
             b, c = cmd.split()
             state, _, terminated, _, status = game.step(int(b) * 9 + int(c))
-            game.render()
+            print(game.render())
             if terminated:
                 started = False
                 print(f"game over: {status['result']}")

@@ -1,6 +1,10 @@
+import logging
+
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
+
+logger = logging.getLogger(__name__)
 
 REWARD_MAP = {
     "win": 1.0,
@@ -22,7 +26,6 @@ class TicTacToeEnv(gym.Env):
 
         # Note: 9 shaped grid with opponent -1, empty 0 and self 1
         self.action_space = spaces.Discrete(9)
-        # TODO: check if this space needs to be defined as float
         self.observation_space = spaces.Box(-1, 1, shape=(9,), dtype=np.int8)
 
         self.agent_first = None
@@ -36,8 +39,11 @@ class TicTacToeEnv(gym.Env):
         op_action = self.opponent.act(state)
 
         # Fallback: Random move
-        if not self.action_space.contains(op_action) or self.board[op_action] != 0:
-            # TODO: need to log this fallback case
+        if not self.action_space.contains(op_action) or state[op_action] != 0:
+            logger.warning(
+                f"Opponent provided invalid action {op_action}; Falling back to random move."
+            )
+
             empty_cells = np.where(state == 0)[0]
             op_action = int(self.np_random.choice(empty_cells))
 
@@ -122,10 +128,10 @@ class TicTacToeEnv(gym.Env):
                 0: ".",
             }
             board = [symbols[x] for x in self.board]
-            print(
+            return (
                 f"{board[0]} {board[1]} {board[2]}\n"
                 f"{board[3]} {board[4]} {board[5]}\n"
-                f"{board[6]} {board[7]} {board[8]}\n"
+                f"{board[6]} {board[7]} {board[8]}"
             )
 
 
@@ -148,11 +154,11 @@ if __name__ == "__main__":
             break
         elif cmd == "s":
             _ = game.reset()
-            game.render()
+            print(game.render())
             started = True
         elif started and cmd in "012345678":
             _, _, terminated, _, status = game.step(int(cmd))
-            game.render()
+            print(game.render())
             if terminated:
                 started = False
                 print(f"game over: {status['result']}")
