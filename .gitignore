@@ -174,3 +174,7 @@ cython_debug/
 .pypirc
 
 **/.DS_Store
+
+# TODO: Temporarily ignoring notebooks and tests
+notebooks/
+tests/
