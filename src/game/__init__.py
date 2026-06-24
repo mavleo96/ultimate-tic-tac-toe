@@ -1,4 +1,4 @@
-from .ttt import TicTacToeEnv
-from .uttt import UltimateTicTacToeEnv
+from .tictactoe import TicTacToe
+from .ultimatetictactoe import UltimateTicTacToe
 
-__all__ = ["TicTacToeEnv", "UltimateTicTacToeEnv"]
+__all__ = ["TicTacToe", "UltimateTicTacToe"]
