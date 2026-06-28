@@ -1,17 +1,12 @@
-from .components import MLP, MultiHeadAttention, MultiHeadAttentionPooling, TransformerBlock
-from .model import SimpleTransformerEncoder, SimpleTransformerEncoderConfig
-from .model1 import HierarchicalTransformerEncoder, HierarchicalTransformerEncoderConfig
-from .model2 import AlternatingTransformerEncoder, AlternatingTransformerEncoderConfig
+from .ttt_simple import TTTTransformer, TTTTransformerConfig
+from .uttt_alternating import UTTTAlternatingTransformer, UTTTAlternatingTransformerConfig
+from .uttt_hierarchical import UTTTHierarchicalTransformer, UTTTHierarchicalTransformerConfig
 
 __all__ = [
-    "MLP",
-    "MultiHeadAttention",
-    "MultiHeadAttentionPooling",
-    "TransformerBlock",
-    "SimpleTransformerEncoder",
-    "SimpleTransformerEncoderConfig",
-    "HierarchicalTransformerEncoder",
-    "HierarchicalTransformerEncoderConfig",
-    "AlternatingTransformerEncoder",
-    "AlternatingTransformerEncoderConfig",
+    "TTTTransformer",
+    "TTTTransformerConfig",
+    "UTTTAlternatingTransformer",
+    "UTTTAlternatingTransformerConfig",
+    "UTTTHierarchicalTransformer",
+    "UTTTHierarchicalTransformerConfig",
 ]

@@ -7,7 +7,7 @@ from .components import TransformerBlock
 
 
 @dataclass
-class SimpleTransformerEncoderConfig:
+class TTTTransformerConfig:
     n_layers: int = 4
     d_model: int = 128
     n_heads: int = 4
@@ -15,8 +15,8 @@ class SimpleTransformerEncoderConfig:
     dropout: float = 0.1
 
 
-class SimpleTransformerEncoder(nn.Module):
-    def __init__(self, config: SimpleTransformerEncoderConfig) -> None:
+class TTTTransformer(nn.Module):
+    def __init__(self, config: TTTTransformerConfig) -> None:
         super().__init__()
 
         self.config = config
