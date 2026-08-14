@@ -1,4 +1,10 @@
+from typing import NamedTuple
+
 import numpy as np
+
+
+class TTTState(NamedTuple):
+    board: np.ndarray
 
 
 class TicTacToe:
@@ -27,29 +33,31 @@ class TicTacToe:
 
     @staticmethod
     def get_init_state():
-        return np.zeros(9, dtype=np.int8)
+        return TTTState(board=np.zeros(9, dtype=np.int8))
 
     @staticmethod
     def get_next_state(state, player, action):
-        assert state[action] == 0
+        board = state.board
+        assert board[action] == 0
 
-        next_state = state.copy()
-        next_state[action] = player
-        return next_state, -player
+        next_board = board.copy()
+        next_board[action] = player
+        return TTTState(board=next_board), -player
 
     @staticmethod
     def get_valid_moves(state, player=1):
-        return (state == 0).astype(np.int8)
+        return (state.board == 0).astype(np.int8)
 
     @staticmethod
     def get_game_ended(state, player):
+        board = state.board
         for a, b, c in TicTacToe.WIN_LINES:
-            s = state[a] + state[b] + state[c]
+            s = board[a] + board[b] + board[c]
             if s == 3 * player:
                 return 1.0
             if s == -3 * player:
                 return -1.0
-        if not np.any(state == 0):
+        if not np.any(board == 0):
             # 1e-4 not 0.0: in Python 0.0 == 0 is True, so returning 0.0 for draw
             # makes it indistinguishable from ongoing (0) under any `if r != 0` check.
             return 1e-4
@@ -57,13 +65,13 @@ class TicTacToe:
 
     @staticmethod
     def get_canonical_form(state, player):
-        return state * player
+        return TTTState(board=state.board * player)
 
     @staticmethod
     def get_symmetries(state, pi):
-        # pi = np.asarray(pi)
-        return [(state[idx], pi[idx]) for idx in TicTacToe.SYMM_AUG_INDICES]
+        board = state.board
+        return [(TTTState(board=board[idx]), pi[idx]) for idx in TicTacToe.SYMM_AUG_INDICES]
 
     @staticmethod
     def get_string_representation(state):
-        return state.tobytes()
+        return state.board.tobytes()
