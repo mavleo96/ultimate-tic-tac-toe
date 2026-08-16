@@ -12,7 +12,8 @@ class UTTTAlternatingTransformerConfig:
     d_model: int = 128
     n_heads: int = 4
     d_ff: int = 256
-    dropout: float = 0.1
+    attn_dropout_p: float = 0.1
+    dropout_p: float = 0.1
 
 
 class UTTTAlternatingTransformer(nn.Module):
@@ -36,19 +37,35 @@ class UTTTAlternatingTransformer(nn.Module):
         # 2. global_blocks: process all boards together
         self.local_blocks = nn.ModuleList(
             [
-                TransformerBlock(config.d_model, config.n_heads, config.d_ff, config.dropout)
+                TransformerBlock(
+                    config.d_model,
+                    config.n_heads,
+                    config.d_ff,
+                    config.attn_dropout_p,
+                    config.dropout_p,
+                )
                 for _ in range(config.n_layers)
             ]
         )
         self.global_blocks = nn.ModuleList(
             [
-                TransformerBlock(config.d_model, config.n_heads, config.d_ff, config.dropout)
+                TransformerBlock(
+                    config.d_model,
+                    config.n_heads,
+                    config.d_ff,
+                    config.attn_dropout_p,
+                    config.dropout_p,
+                )
                 for _ in range(config.n_layers)
             ]
         )
 
         self.mhap = MultiHeadAttentionPooling(
-            config.d_model, config.n_heads, dropout=config.dropout
+            config.d_model,
+            config.n_heads,
+            1,
+            config.attn_dropout_p,
+            config.dropout_p,
         )
 
         # Cls tokens
@@ -80,6 +97,9 @@ class UTTTAlternatingTransformer(nn.Module):
         nn.init.normal_(self.mhap.seeds, std=0.02)
 
     def forward(self, x: torch.LongTensor, y: torch.LongTensor) -> torch.Tensor:
+        if x.dim() != 3 or y.dim() != 2:
+            raise ValueError(f"Input must be a 3D and 2D tensor, got {x.dim()}D and {y.dim()}D")
+
         B, N, S = x.shape
         D = self.config.d_model
         if N != 9 or S != 9:

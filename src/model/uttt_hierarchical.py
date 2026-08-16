@@ -13,7 +13,8 @@ class UTTTHierarchicalTransformerConfig:
     d_model: int = 128
     n_heads: int = 4
     d_ff: int = 256
-    dropout: float = 0.1
+    attn_dropout_p: float = 0.1
+    dropout_p: float = 0.1
 
 
 class UTTTHierarchicalTransformer(nn.Module):
@@ -37,13 +38,25 @@ class UTTTHierarchicalTransformer(nn.Module):
         # 2. meta_blocks: process meta board only
         self.local_blocks = nn.ModuleList(
             [
-                TransformerBlock(config.d_model, config.n_heads, config.d_ff, config.dropout)
+                TransformerBlock(
+                    config.d_model,
+                    config.n_heads,
+                    config.d_ff,
+                    config.attn_dropout_p,
+                    config.dropout_p,
+                )
                 for _ in range(config.n_local_layers)
             ]
         )
         self.meta_blocks = nn.ModuleList(
             [
-                TransformerBlock(config.d_model, config.n_heads, config.d_ff, config.dropout)
+                TransformerBlock(
+                    config.d_model,
+                    config.n_heads,
+                    config.d_ff,
+                    config.attn_dropout_p,
+                    config.dropout_p,
+                )
                 for _ in range(config.n_meta_layers)
             ]
         )
@@ -83,6 +96,9 @@ class UTTTHierarchicalTransformer(nn.Module):
         nn.init.normal_(self.cls_meta_token, std=0.02)
 
     def forward(self, x: torch.LongTensor, y: torch.LongTensor) -> torch.Tensor:
+        if x.dim() != 3 or y.dim() != 2:
+            raise ValueError(f"Input must be a 3D and 2D tensor, got {x.dim()}D and {y.dim()}D")
+
         B, N, S = x.shape
         D = self.config.d_model
         if N != 9 or S != 9:

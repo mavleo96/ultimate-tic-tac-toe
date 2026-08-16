@@ -4,6 +4,21 @@ import numpy as np
 
 
 class UTTTState(NamedTuple):
+    """
+    board:
+    np.ndarray of shape (9, 9)
+    int8
+
+    Sign convention:
+    1: self player
+    -1: opponent player
+    0: empty
+
+    active:
+    np.ndarray of shape (9,) bool
+    True if the board is active, False if it is not.
+    """
+
     board: np.ndarray  # (9, 9) int8
     active: np.ndarray  # (9,) bool
 

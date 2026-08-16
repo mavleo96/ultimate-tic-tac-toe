@@ -12,7 +12,8 @@ class TTTTransformerConfig:
     d_model: int = 128
     n_heads: int = 4
     d_ff: int = 256
-    dropout: float = 0.1
+    attn_dropout_p: float = 0.1
+    dropout_p: float = 0.1
 
 
 class TTTTransformer(nn.Module):
@@ -29,7 +30,13 @@ class TTTTransformer(nn.Module):
 
         self.blocks = nn.ModuleList(
             [
-                TransformerBlock(config.d_model, config.n_heads, config.d_ff, config.dropout)
+                TransformerBlock(
+                    config.d_model,
+                    config.n_heads,
+                    config.d_ff,
+                    config.attn_dropout_p,
+                    config.dropout_p,
+                )
                 for _ in range(config.n_layers)
             ]
         )
@@ -60,6 +67,8 @@ class TTTTransformer(nn.Module):
         nn.init.normal_(self.cls_token, std=0.02)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if x.dim() != 2:
+            raise ValueError(f"Input must be a 2D tensor, got {x.dim()}D")
         B, S = x.shape
         if S != 9:
             raise ValueError(f"Input must be a 9-cell board, got {S}")

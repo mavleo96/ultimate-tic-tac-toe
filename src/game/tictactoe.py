@@ -4,6 +4,23 @@ import numpy as np
 
 
 class TTTState(NamedTuple):
+    """
+    board:
+    np.ndarray of shape (9,)
+
+    Sign convention:
+    1: self player
+    -1: opponent player
+    0: empty
+
+    Example:
+    [1, -1, 0, -1, -1, 0, 0, 1, 1]
+
+    X | O | -
+    O | O | -
+    - | X | X
+    """
+
     board: np.ndarray
 
 
