@@ -178,3 +178,8 @@ cython_debug/
 # TODO: Temporarily ignoring notebooks and tests
 notebooks/
 tests/
+docs/
+src/rl/*
+.claude/
+src/train.py
+CLAUDE.md
