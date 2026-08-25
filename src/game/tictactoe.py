@@ -2,6 +2,8 @@ from typing import NamedTuple
 
 import numpy as np
 
+from .utils import SYMM_INDICES_3x3, WIN_LINES_3x3
+
 
 class TTTState(NamedTuple):
     """
@@ -25,28 +27,8 @@ class TTTState(NamedTuple):
 
 
 class TicTacToe:
-    # 8 symmetries: 4 rotations x 2 flips
-    SYMM_AUG_INDICES = [
-        [0, 1, 2, 3, 4, 5, 6, 7, 8],  # identity
-        [2, 5, 8, 1, 4, 7, 0, 3, 6],  # rot 90 CCW
-        [8, 7, 6, 5, 4, 3, 2, 1, 0],  # rot 180
-        [6, 3, 0, 7, 4, 1, 8, 5, 2],  # rot 270 CCW
-        [2, 1, 0, 5, 4, 3, 8, 7, 6],  # flip horizontal
-        [6, 7, 8, 3, 4, 5, 0, 1, 2],  # flip vertical
-        [0, 3, 6, 1, 4, 7, 2, 5, 8],  # transpose (main diag)
-        [8, 5, 2, 7, 4, 1, 6, 3, 0],  # anti-transpose
-    ]
-
-    WIN_LINES = (
-        (0, 1, 2),  # row 0
-        (3, 4, 5),  # row 1
-        (6, 7, 8),  # row 2
-        (0, 3, 6),  # col 0
-        (1, 4, 7),  # col 1
-        (2, 5, 8),  # col 2
-        (0, 4, 8),  # diag 1
-        (2, 4, 6),  # diag 2
-    )
+    SYMM_AUG_INDICES = SYMM_INDICES_3x3
+    WIN_LINES = WIN_LINES_3x3
 
     @staticmethod
     def get_init_state():
@@ -71,14 +53,12 @@ class TicTacToe:
         for a, b, c in TicTacToe.WIN_LINES:
             s = board[a] + board[b] + board[c]
             if s == 3 * player:
-                return 1.0
+                return True, 1.0
             if s == -3 * player:
-                return -1.0
+                return True, -1.0
         if not np.any(board == 0):
-            # 1e-4 not 0.0: in Python 0.0 == 0 is True, so returning 0.0 for draw
-            # makes it indistinguishable from ongoing (0) under any `if r != 0` check.
-            return 1e-4
-        return 0
+            return True, 0.0
+        return False, 0.0
 
     @staticmethod
     def get_canonical_form(state, player):

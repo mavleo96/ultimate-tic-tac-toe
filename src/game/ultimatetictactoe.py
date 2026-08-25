@@ -2,6 +2,8 @@ from typing import NamedTuple
 
 import numpy as np
 
+from .utils import SYMM_INDICES_3x3, WIN_LINES_3x3
+
 
 class UTTTState(NamedTuple):
     """
@@ -24,33 +26,15 @@ class UTTTState(NamedTuple):
 
 
 class UltimateTicTacToe:
-    SYMM_AUG_INDICES_3x3 = [
-        [0, 1, 2, 3, 4, 5, 6, 7, 8],  # identity
-        [2, 5, 8, 1, 4, 7, 0, 3, 6],  # rot 90 CCW
-        [8, 7, 6, 5, 4, 3, 2, 1, 0],  # rot 180
-        [6, 3, 0, 7, 4, 1, 8, 5, 2],  # rot 270 CCW
-        [2, 1, 0, 5, 4, 3, 8, 7, 6],  # flip horizontal
-        [6, 7, 8, 3, 4, 5, 0, 1, 2],  # flip vertical
-        [0, 3, 6, 1, 4, 7, 2, 5, 8],  # transpose (main diag)
-        [8, 5, 2, 7, 4, 1, 6, 3, 0],  # anti-transpose
-    ]
+    SYMM_AUG_INDICES_3x3 = SYMM_INDICES_3x3
 
     # Each 9x9 symmetry is the same spatial transform applied independently to
     # "which sub-board" and "which cell within it": idx9[b*9+c] == idx3[b]*9 + idx3[c].
     SYMM_AUG_INDICES_9x9 = [
-        [idx3[b] * 9 + idx3[c] for b in range(9) for c in range(9)] for idx3 in SYMM_AUG_INDICES_3x3
+        [idx3[b] * 9 + idx3[c] for b in range(9) for c in range(9)] for idx3 in SYMM_INDICES_3x3
     ]
 
-    WIN_LINES = (
-        (0, 1, 2),
-        (3, 4, 5),
-        (6, 7, 8),  # rows
-        (0, 3, 6),
-        (1, 4, 7),
-        (2, 5, 8),  # cols
-        (0, 4, 8),
-        (2, 4, 6),  # diags
-    )
+    WIN_LINES = WIN_LINES_3x3
 
     @staticmethod
     def get_init_state():
@@ -91,14 +75,12 @@ class UltimateTicTacToe:
         meta_board = UltimateTicTacToe._derive_meta_board(state.board)
         winner = UltimateTicTacToe._get_board_winner(meta_board)
         if winner == player:
-            return 1.0
+            return True, 1.0
         if winner == -player:
-            return -1.0
+            return True, -1.0
         if winner == 2:
-            # 1e-4 not 0.0: in Python 0.0 == 0 is True, so returning 0.0 for draw
-            # makes it indistinguishable from ongoing (0) under any `if r != 0` check.
-            return 1e-4
-        return 0
+            return True, 0.0
+        return False, 0.0
 
     @staticmethod
     def get_canonical_form(state, player):
